@@ -6,12 +6,16 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 
 export default function FillProfileScreen({ navigation }) {
   const [profileImage, setProfileImage] = useState(null);
+  const [experience, setExperience] = useState("");
+  const [aboutMe, setAboutMe] = useState("");
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -23,6 +27,19 @@ export default function FillProfileScreen({ navigation }) {
 
     if (!result.canceled) {
       setProfileImage(result.assets[0].uri);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const response = await axios.post("http://192.168.23.1:4000/doctor/", {
+        experience,
+        aboutMe,
+      });
+      Alert.alert("Success", "Profile updated successfully!");
+      navigation.navigate("Congratulations");
+    } catch (error) {
+      Alert.alert("Error", "Failed to update profile");
     }
   };
 
@@ -48,18 +65,22 @@ export default function FillProfileScreen({ navigation }) {
         )}
       </TouchableOpacity>
 
-      <TextInput style={styles.input} placeholder="Full Name" />
-      <TextInput style={styles.input} placeholder="Nickname" />
       <TextInput
         style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
+        placeholder="Experience"
+        value={experience}
+        onChangeText={setExperience}
+      />
+      <TextInput
+        style={[styles.input, styles.textArea]}
+        placeholder="About Me"
+        multiline
+        numberOfLines={4}
+        value={aboutMe}
+        onChangeText={setAboutMe}
       />
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("Congratulations")}
-      >
+      <TouchableOpacity style={styles.button} onPress={handleSaveProfile}>
         <Text style={styles.buttonText}>Save</Text>
       </TouchableOpacity>
     </View>
@@ -100,6 +121,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingLeft: 10,
     marginBottom: 10,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: "top",
   },
   button: {
     backgroundColor: "black",
