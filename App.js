@@ -7,7 +7,6 @@ import FavoritesScreen from "./screens/FavoritesScreen";
 import RemoveFavoriteScreen from "./screens/RemoveFavoriteScreen.js";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import CreateAccountScreen from "./screens/CreateAccountScreen.js";
-import FillProfileScreen from "./screens/FIllProfileScreen.js";
 import LoginScreen from "./screens/LoginScreen.js";
 import AllDoctors from "./component/AllDoctors/allDoctors.js";
 import BookingScreen from "./component/bookAppointment/BookingScreen.js";
@@ -37,7 +36,6 @@ export default function App() {
       >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="CreateAccount" component={CreateAccountScreen} />
-        <Stack.Screen name="FillProfile" component={FillProfileScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="Favorites" component={FavoritesScreen} />

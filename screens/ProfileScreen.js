@@ -14,7 +14,6 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 export default function ProfileScreen({ navigation }) {
-  // State to control modal visibility
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleLogOut = async () => {
@@ -26,28 +25,24 @@ export default function ProfileScreen({ navigation }) {
         return;
       }
 
-      // Call backend logout API
+      console.log("Retrieved Token:", token); // Debugging Step
+
       await axios.post(
-        "http://192.168.1.23:4000/users/logout",
+        "http://192.168.88.27:3000/users/logout",
         {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Remove token from AsyncStorage
-      await AsyncStorage.removeItem("userToken");
-
-      // Close modal (if applicable)
+      await AsyncStorage.removeItem("userToken"); // Clear token from storage
       setIsModalVisible(false);
-
-      // Redirect to Login screen
-      navigation.replace("Login");
-
+      navigation.navigate("Login"); // Redirect to login
       Alert.alert("Success", "Logged out successfully!");
     } catch (error) {
-      console.log("Logout Error:", error.response?.data || error.message);
-      Alert.alert("Error", "Failed to log out. Please try again.");
+      console.error("Logout Error:", error.response?.data || error.message);
+      Alert.alert(
+        "Error",
+        error.response?.data?.message || "Failed to log out."
+      );
     }
   };
 

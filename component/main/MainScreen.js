@@ -8,17 +8,20 @@ import TopDoctors from "./TopDoctors";
 
 const MainScreen = ({ navigation }) => {
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      {/* Header outside ScrollView */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => alert("Notification clicked!")}>
           <Ionicons name="notifications-outline" size={28} color="black" />
         </TouchableOpacity>
       </View>
 
-      <Search />
-      <Card navigation={navigation} style={{ gap: 10 }} />
-      <Category />
-      <TopDoctors />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Search />
+        <Card navigation={navigation} />
+        <Category />
+        <TopDoctors />
+      </ScrollView>
 
       {/* Menu */}
       <View style={styles.menu}>
@@ -30,18 +33,18 @@ const MainScreen = ({ navigation }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate("Calendar")}
+          onPress={() => navigation.navigate("AllDoctor")}
         >
           <Ionicons name="calendar-outline" size={24} color="black" />
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate("Account")}
+          onPress={() => navigation.navigate("Profile")}
         >
           <Ionicons name="person-outline" size={24} color="black" />
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -52,6 +55,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 15,
   },
+  scrollContent: {
+    paddingBottom: 80, // Prevent content from being overlapped by the menu
+  },
   header: {
     position: "absolute",
     top: 20,
@@ -61,15 +67,20 @@ const styles = StyleSheet.create({
   menu: {
     flexDirection: "row",
     justifyContent: "space-around",
-    alignItems: "center",
+    alignItems: "flex-end",
     paddingVertical: 10,
     backgroundColor: "#f8f8f8",
     borderTopWidth: 1,
     borderTopColor: "#ddd",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   menuItem: {
     flex: 1,
     alignItems: "center",
+    paddingVertical: 10,
   },
 });
 

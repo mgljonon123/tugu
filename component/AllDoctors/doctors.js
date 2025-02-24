@@ -19,7 +19,9 @@ const Doctors = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get("http://192.168.1.23:4000/doctors/");
+        const response = await axios.get(
+          "http://192.168.88.27:3000/doctors/getall"
+        );
         setDoctors(response.data);
       } catch (error) {
         console.error("Error fetching doctors:", error);

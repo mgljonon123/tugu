@@ -9,6 +9,8 @@ import {
   Alert,
 } from "react-native";
 import axios from "axios";
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const logoUrl =
   "https://www.diamondsmile.cz/wp-content/uploads/2022/05/logo_CMYK_D.png";
@@ -17,25 +19,71 @@ export default function CreateAccountScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("patient"); // Default role
-  const [phone, setPhone] = useState(""); // For phone number input (ensure it's a string)
+  const [role, setRole] = useState("patient");
+  const [phone, setPhone] = useState("");
+  const [aboutMe, setAboutMe] = useState("");
+  const [experience, setExperience] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
+  };
 
   const handleCreateAccount = async () => {
     try {
+      const formData = new FormData();
+
+      formData.append("fullName", fullName);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("role", role.toUpperCase());
+
+      if (role === "doctor") {
+        formData.append("phone", phone.toString());
+        formData.append("experience", experience);
+      }
+
+      formData.append("aboutMe", aboutMe);
+
+      // Append image if selected
+      if (profileImage) {
+        formData.append("profilePicture", {
+          uri: profileImage,
+          name: "profile.jpg",
+          type: "image/jpeg",
+        });
+      }
+
+      console.log("Uploading data...");
+
       const response = await axios.post(
-        "http://192.168.1.23:4000/users/register", // ✅ Replace with your local IP
+        "http://192.168.88.27:3000/users/register",
+        formData,
         {
-          fullName,
-          email,
-          password,
-          role: role.toUpperCase(),
-          phone: role === "doctor" ? phone.toString() : undefined, // Ensure phone is always a string
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
 
-      Alert.alert("Success", "Account Created Successfully!");
+      const { token } = response.data;
+      if (token) {
+        await AsyncStorage.setItem("userToken", token);
+        console.log("Token stored successfully.");
+      } else {
+        console.log("No token received from server.");
+      }
 
-      navigation.navigate("FillProfile");
+      console.log("Account created successfully:", response.data);
+      Alert.alert("Success", "Account Created Successfully!");
+      navigation.navigate("Login");
     } catch (error) {
       console.log("Registration Error:", error.response?.data || error.message);
       Alert.alert(
@@ -49,7 +97,7 @@ export default function CreateAccountScreen({ navigation }) {
     <View style={styles.container}>
       <Image source={{ uri: logoUrl }} style={styles.logo} />
       <Text style={styles.title}>Diamond Smile</Text>
-      <Text style={styles.subtitle}>Create Account</Text>
+      <Text style={styles.subtitle}>Create Your Account</Text>
 
       <TextInput
         style={styles.input}
@@ -72,7 +120,6 @@ export default function CreateAccountScreen({ navigation }) {
         onChangeText={setPassword}
       />
 
-      {/* Role Selection */}
       <Text style={styles.label}>Select Role:</Text>
       <View style={styles.radioContainer}>
         <TouchableOpacity
@@ -82,7 +129,14 @@ export default function CreateAccountScreen({ navigation }) {
           ]}
           onPress={() => setRole("patient")}
         >
-          <Text style={styles.radioText}>Patient</Text>
+          <Text
+            style={[
+              styles.radioText,
+              role === "patient" && styles.radioTextSelected,
+            ]}
+          >
+            Patient
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -91,19 +145,56 @@ export default function CreateAccountScreen({ navigation }) {
           ]}
           onPress={() => setRole("doctor")}
         >
-          <Text style={styles.radioText}>Doctor</Text>
+          <Text
+            style={[
+              styles.radioText,
+              role === "doctor" && styles.radioTextSelected,
+            ]}
+          >
+            Doctor
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Phone number input for doctors */}
       {role === "doctor" && (
-        <TextInput
-          style={styles.input}
-          placeholder="Your Phone Number"
-          keyboardType="default"
-          value={phone}
-          onChangeText={(text) => setPhone(text)} // Ensures it's treated as a string
-        />
+        <View style={styles.doc}>
+          <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <Text style={styles.imagePickerText}>
+                Tap to Select Profile Picture
+              </Text>
+            )}
+          </TouchableOpacity>
+          <View style={styles.doc2}>
+            <TextInput
+              style={styles.input}
+              placeholder="Your Phone Number"
+              keyboardType="default"
+              value={phone}
+              onChangeText={setPhone}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Years of Experience"
+              keyboardType="numeric"
+              value={experience}
+              onChangeText={setExperience}
+            />
+            <TextInput
+              style={[styles.input, styles.aboutMeInput]}
+              placeholder="Tell us about yourself..."
+              multiline
+              numberOfLines={4}
+              value={aboutMe}
+              onChangeText={setAboutMe}
+            />
+          </View>
+        </View>
       )}
 
       <TouchableOpacity style={styles.button} onPress={handleCreateAccount}>
@@ -117,31 +208,59 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
-    padding: 20,
+    padding: 25,
     backgroundColor: "#fff",
     alignItems: "center",
   },
-  logo: { width: 100, height: 100, marginBottom: 20 },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 10,
+  radioTextSelected: {
+    color: "#fff",
   },
-  subtitle: { fontSize: 18, textAlign: "center", marginBottom: 20 },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 15,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+  },
+  doc: {
+    display: "flex",
+    flexDirection: "row",
+    width: "100%",
+    gap: "14%",
+  },
+  doc2: {
+    width: "60%",
+  },
+  subtitle: {
+    fontSize: 18,
+    textAlign: "center",
+    marginBottom: 20,
+    color: "#555",
+  },
   input: {
     width: "100%",
     height: 50,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingLeft: 10,
-    marginBottom: 10,
+    borderRadius: 12,
+    paddingLeft: 15,
+    marginBottom: 12,
+    backgroundColor: "#f9f9f9",
+    borderColor: "#ddd",
+  },
+  aboutMeInput: {
+    height: 100,
+    textAlignVertical: "top",
   },
   label: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
     marginBottom: 10,
     alignSelf: "flex-start",
+    color: "#444",
   },
   radioContainer: {
     flexDirection: "row",
@@ -152,10 +271,11 @@ const styles = StyleSheet.create({
   radioButton: {
     flex: 1,
     alignItems: "center",
-    padding: 10,
+    paddingVertical: 12,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     marginHorizontal: 5,
+    borderColor: "#bbb",
   },
   radioSelected: {
     backgroundColor: "black",
@@ -164,13 +284,45 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "black",
   },
+  imagePicker: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: "#f3f3f3",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    overflow: "hidden",
+    marginLeft: "10",
+    marginTop: "20",
+  },
+  imagePickerText: {
+    fontSize: 14,
+    color: "gray",
+    textAlign: "center",
+  },
+  profileImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 65,
+  },
   button: {
-    backgroundColor: "black",
+    backgroundColor: "#000",
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
     width: "100%",
     marginTop: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
   },
-  buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  buttonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
 });

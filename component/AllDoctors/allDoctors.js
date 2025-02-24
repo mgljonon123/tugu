@@ -121,10 +121,11 @@ const AllDoctors = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get("http://192.168.1.23:4000/doctors/");
+        const response = await axios.get(
+          "http://192.168.88.27:3000/doctors/getall"
+        );
         console.log(response.data);
-        setDoctors(response.data);
-        console.log(doctors);
+        setDoctors(response.data.length > 0 ? [response.data[0]] : []); // Store only one doctor
       } catch (error) {
         console.error("Error fetching doctors:", error);
       } finally {
@@ -134,6 +135,7 @@ const AllDoctors = () => {
 
     fetchDoctors();
   }, []);
+
   console.log(doctors);
 
   if (loading) {
