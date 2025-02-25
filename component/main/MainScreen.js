@@ -9,13 +9,6 @@ import TopDoctors from "./TopDoctors";
 const MainScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      {/* Header outside ScrollView */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => alert("Notification clicked!")}>
-          <Ionicons name="notifications-outline" size={28} color="black" />
-        </TouchableOpacity>
-      </View>
-
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Search />
         <Card navigation={navigation} />
@@ -47,18 +40,20 @@ const MainScreen = ({ navigation }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 15,
-    paddingTop: 15,
+    paddingTop: 50, // Increased padding to prevent header overlap
   },
   scrollContent: {
-    paddingBottom: 80, // Prevent content from being overlapped by the menu
+    paddingBottom: 100, // Increased to avoid overlap with the menu
   },
   header: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
     position: "absolute",
     top: 20,
     right: 20,
@@ -67,8 +62,8 @@ const styles = StyleSheet.create({
   menu: {
     flexDirection: "row",
     justifyContent: "space-around",
-    alignItems: "flex-end",
-    paddingVertical: 10,
+    alignItems: "center",
+    paddingVertical: 15, // Increased padding for better touch experience
     backgroundColor: "#f8f8f8",
     borderTopWidth: 1,
     borderTopColor: "#ddd",
@@ -80,7 +75,7 @@ const styles = StyleSheet.create({
   menuItem: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 10,
+    paddingVertical: 12, // Slightly increased for better spacing
   },
 });
 

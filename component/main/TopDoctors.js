@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 
 const topDoctors = [
   {
@@ -8,7 +15,8 @@ const topDoctors = [
     specialty: "Pediatrician",
     room: "Room 302",
     rating: 5.0,
-    image: "https://i.pinimg.com/236x/1a/f2/96/1af296e06610dd46944892fe29441231.jpg",
+    image:
+      "https://i.pinimg.com/236x/1a/f2/96/1af296e06610dd46944892fe29441231.jpg",
   },
   {
     id: "2",
@@ -16,7 +24,8 @@ const topDoctors = [
     specialty: "Orthopedic Surgeon",
     room: "Room 201",
     rating: 4.8,
-    image: "https://i.pinimg.com/236x/95/e7/ba/95e7bac37f9b3c17e8652b4631f2801e.jpg",
+    image:
+      "https://i.pinimg.com/236x/95/e7/ba/95e7bac37f9b3c17e8652b4631f2801e.jpg",
   },
 ];
 
@@ -46,7 +55,6 @@ const TopDoctors = () => {
 const styles = StyleSheet.create({
   container: {
     maxHeight: 300,
-    marginVertical: 10,
   },
   title: {
     fontSize: 22,
@@ -61,11 +69,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "center",
     marginRight: 15,
-    shadowColor: "#000", // Сүүдэрийн өнгө
-    shadowOffset: { width: 0, height: 5 }, // Сүүдэрийн байрлал
-    shadowOpacity: 0.3, // Сүүдэрийн тунгалаг байдал
-    shadowRadius: 5, // Сүүдэрийн тархалт
-    elevation: 6, // Android сүүдэр
   },
   image: {
     width: "100%",
@@ -76,24 +79,25 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#black",
+    color: "#000",
     textAlign: "center",
     marginTop: 10,
   },
   specialty: {
     fontSize: 14,
-    color: "#black",
+    color: "#555",
     textAlign: "center",
   },
   room: {
     fontSize: 12,
-    color: "#black",
+    color: "#777",
     textAlign: "center",
   },
   rating: {
     fontSize: 14,
-    color: "#ffd700",
+    color: "#FFD700",
     textAlign: "center",
+    fontWeight: "bold",
   },
 });
 

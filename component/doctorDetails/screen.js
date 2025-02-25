@@ -1,6 +1,16 @@
-import React, { useState } from "react"; // useState-г оруулж ирнэ
-import { ScrollView, StyleSheet, View, TouchableOpacity, Text } from "react-native";
-import { Ionicons } from "@expo/vector-icons"; // Icon сан
+import React, { useState, useEffect } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+  Image,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import Card from "./card";
 import Rating from "./rating";
 import AboutMe from "./aboutMe";
@@ -8,55 +18,123 @@ import WorkingTime from "./workingTime";
 import Reviews from "./reviews";
 
 const DoctorDetailsScreen = ({ navigation }) => {
-  const [isFavorited, setIsFavorited] = useState(false); // Зүрхний статусыг хадгалах
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDoctorDetails = async () => {
+      try {
+        const storedQuery = await AsyncStorage.getItem("lastSearch");
+        if (!storedQuery) {
+          console.warn("No search query found.");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch doctor details from API
+        const response = await fetch(
+          `https://192.168.88.27:3000/doctors/${storedQuery}`
+        );
+        const data = await response.json();
+
+        // Parse availableDays if it's stored as a string
+        data.availableDays = data.availableDays
+          ? JSON.parse(data.availableDays)
+          : [];
+
+        setDoctor(data);
+      } catch (error) {
+        console.error("Error fetching doctor details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctorDetails();
+  }, []);
 
   const handleGoBack = () => {
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
-      navigation.navigate("HomeScreen"); // Эхний хуудас руу буцаах
+      navigation.navigate("HomeScreen");
     }
   };
 
   const toggleFavorite = () => {
-    setIsFavorited(!isFavorited); // Зүрхний статусыг солино
+    setIsFavorited(!isFavorited);
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#1C2A3A" />
+      </View>
+    );
+  }
+
+  if (!doctor) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>
+          No doctor found. Please search again.
+        </Text>
+        <TouchableOpacity style={styles.button} onPress={handleGoBack}>
+          <Text style={styles.buttonText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* Header - Буцах сум, Гарчиг, Зүрх */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={28} color="black" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Doctor Details</Text>
         <TouchableOpacity onPress={toggleFavorite}>
-          <Ionicons 
-            name={isFavorited ? "heart" : "heart-outline"} // Зүрхний статусын дагуу тэмдэгтийг харуулна
-            size={28} 
-            color={isFavorited ? "red" : "black"} // Зүрхний өнгийг статусын дагуу тодорхойлно
+          <Ionicons
+            name={isFavorited ? "heart" : "heart-outline"}
+            size={28}
+            color={isFavorited ? "red" : "black"}
           />
         </TouchableOpacity>
       </View>
 
-      {/* Үндсэн агуулга */}
+      {/* Main Content */}
       <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
-        <Card 
-          name="Dr. David Patel"
-          specialty="Cardiologist"
-          location="Golden Cardiology Center"
-          image="https://via.placeholder.com/150"
+        <Card
+          name={`Dr. ${doctor.userId}`}
+          specialty={doctor.specialization}
+          location={`Phone: ${doctor.phone}`}
+          image={`https://your-api-url.com${doctor.profileImage}`}
         />
-        <Rating patients="2000" experience="10" rating="5" reviews="1872" />
-        <AboutMe description="Dr. David Patel, a dedicated cardiologist, brings a wealth of experience to Golden Gate Cardiology Center in Golden Gate, CA." />
-        <WorkingTime time="Monday-Friday, 08:00 AM - 18:00 PM" />
-        <Reviews reviewer="Emily Anderson" rating="5.0" comment="Dr. Patel is a true professional who genuinely cares about his patients." />
+        <Rating
+          patients="N/A"
+          experience={`${doctor.experience} years`}
+          rating="N/A"
+          reviews="N/A"
+        />
+        <AboutMe description={doctor.aboutMe || "No details available"} />
+        <WorkingTime
+          time={
+            doctor.availableDays.length > 0
+              ? doctor.availableDays.join(", ")
+              : "No available days"
+          }
+        />
+
+        {/* Example review section (replace with actual data if available) */}
+        <Reviews reviewer="Anonymous" rating="5.0" comment="Great doctor!" />
       </ScrollView>
 
-      {/* Доод хэсэг - Book Appointment товч */}
+      {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity 
-          style={styles.button} 
+        <TouchableOpacity
+          style={styles.button}
           onPress={() => navigation.navigate("BookingScreen")}
         >
           <Text style={styles.buttonText}>Book Appointment</Text>
@@ -96,6 +174,21 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "red",
+    marginBottom: 20,
   },
 });
 

@@ -13,8 +13,8 @@ import axios from "axios";
 
 const Doctors = () => {
   const navigation = useNavigation();
-  const [doctors, setDoctors] = useState([]); // State for doctors list
-  const [loading, setLoading] = useState(true); // State for loading indicator
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDoctors = async () => {
